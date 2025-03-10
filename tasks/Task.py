@@ -1,6 +1,9 @@
 from pydantic import BaseModel
-from typing import Optional, Union, List
-from tasks.Subtask import Subtask
+from typing import Optional, Union, List, TYPE_CHECKING
+
+# 타입 체킹 시에만 import
+if TYPE_CHECKING:
+    from .Subtask import Subtask
 
 class Task(BaseModel):
     """
@@ -19,15 +22,25 @@ class Task(BaseModel):
         subtasks (List[Subtask]): A list of subtasks belonging to this task.
     """
     name: str
-    id: Optional[Union[int, str]] = None
-    context: str
+    id: Union[int, str] = 0
+    context: str = ""
 
     location_tags: List[str] = []
     time_tags: List[str] = []
     other_tags: List[str] = []
     estimated_minutes: int = 0
 
-    subtasks: List[Subtask] = []
+    # 문자열 기반 타입 어노테이션 사용
+    subtasks: List['Subtask'] = []
+    
+    def __init__(self, task_name: str):
+        """
+        Initialize a new task with the given name.
+
+        Args:
+            task_name (str): The name of the task.
+        """
+        super().__init__(name=task_name)
     
     def set_supertask_of_subtask(self) -> None:
         """
@@ -37,7 +50,7 @@ class Task(BaseModel):
             subtask.set_supertask(self, 'task')
             subtask.set_supertask_of_subtasks()
     
-    def add_subtask(self, subtask: Subtask) -> None:
+    def add_subtask(self, subtask: 'Subtask') -> None:
         """
         Add a new subtask to this task.
 
@@ -54,7 +67,7 @@ class Task(BaseModel):
         for i, subtask in enumerate(self.subtasks):
             subtask.index = (i + 1)
         
-    def get_subtask(self, index: int) -> Subtask:
+    def get_subtask(self, index: int) -> 'Subtask':
         """
         Get a specific subtask by its index (zero-based).
 
@@ -71,14 +84,14 @@ class Task(BaseModel):
             raise IndexError("Index out of bounds.")
         return self.subtasks[index]
     
-    def get_all_subtasks(self) -> List[Subtask]:
+    def get_all_subtasks(self) -> List['Subtask']:
         """
         Get all subtasks including nested subtasks in a flattened list.
 
         Returns:
             List[Subtask]: All subtasks at any nesting level.
         """
-        all_subtasks: List[Subtask] = []
+        all_subtasks: List['Subtask'] = []
         for subtask in self.subtasks:
             all_subtasks.append(subtask)
             all_subtasks.extend(subtask.get_all_subtasks())
@@ -127,7 +140,7 @@ class Task(BaseModel):
         """
         self.estimated_minutes = self.calculate_total_minutes()
     
-    def update_subtask(self, index: int, subtask: Subtask) -> None:
+    def update_subtask(self, index: int, subtask: 'Subtask') -> None:
         """
         Update a subtask at the given index with a new subtask.
 
@@ -162,5 +175,3 @@ class Task(BaseModel):
         Clear all subtasks.
         """
         self.subtasks.clear()
-    
-Task.model_rebuild()

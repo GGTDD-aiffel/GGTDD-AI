@@ -1,6 +1,9 @@
 from pydantic import BaseModel
-from typing import Optional, Union, Any, List
-from tasks.Task import Task
+from typing import Optional, Union, Any, List, TYPE_CHECKING
+
+# 타입 체킹 시에만 import
+if TYPE_CHECKING:
+    from .Task import Task
 
 class Subtask(BaseModel):
     """
@@ -25,9 +28,9 @@ class Subtask(BaseModel):
     """
     # basic information of the subtask
     name: str
-    id: Optional[Union[int, str]] = None
-    index: Optional[int] = None
-    context: Optional[str] = None
+    id: Union[int, str] = None
+    index: int = None
+    context: str = None
     
     # tags of the subtask
     location_tags: List[str] = []
@@ -37,13 +40,22 @@ class Subtask(BaseModel):
     
     # subtasks of the subtask
     has_subtasks: bool = False
-    subtasks: Optional[List['Subtask']] = None
+    subtasks: List['Subtask'] = None
     
     # super of the subtask
-    supertask_id: Optional[Union[int, str]] = None
-    supertask_type: Optional[str] = None
+    supertask_id: Union[int, str] = None
+    supertask_type: str = None
     
     _supertask: Any = None
+    
+    def __init__(self, subtask_name: str):
+        """
+        Initialize a new subtask with the given name.
+
+        Args:
+            subtask_name (str): The name of the subtask.
+        """
+        super().__init__(name=subtask_name)
     
     def get_supertask(self) -> Any:
         """Returns the parent task of this subtask."""
@@ -193,5 +205,3 @@ class Subtask(BaseModel):
             int: The number of subtasks.
         """
         return len(self.subtasks) if self.subtasks is not None else 0
-
-Subtask.model_rebuild()
