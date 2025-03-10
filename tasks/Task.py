@@ -1,9 +1,8 @@
 from pydantic import BaseModel
-from typing import Optional, Union, List, TYPE_CHECKING
+from typing import Union, List
 
-# 타입 체킹 시에만 import
-if TYPE_CHECKING:
-    from .Subtask import Subtask
+from .Subtask import Subtask
+from .TaskGenerator import TaskGenerator
 
 class Task(BaseModel):
     """
@@ -41,6 +40,18 @@ class Task(BaseModel):
             task_name (str): The name of the task.
         """
         super().__init__(name=task_name)
+        
+    def set_context_and_tags(self, llm = 'TaskGenerator'):
+        """
+        Set the context and tags for the task based on the given LLM instance.
+
+        Args:
+            llm (TaskGenerator): The LLM instance to use for generating the context and tags.
+        """
+        self.context, self.location_tags, self.time_tags, self.other_tags = llm.generate_context_and_tags(self.name)
+        
+        
+        
     
     def set_supertask_of_subtask(self) -> None:
         """
