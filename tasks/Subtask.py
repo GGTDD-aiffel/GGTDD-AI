@@ -1,7 +1,8 @@
 from pydantic import BaseModel
-from typing import Union, Any, List
+from typing import Union, Any, List, TYPE_CHECKING
 
-from .Task import Task
+if TYPE_CHECKING:
+    from .Task import Task
 
 class Subtask(BaseModel):
     """
