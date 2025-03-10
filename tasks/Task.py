@@ -62,7 +62,7 @@ class Task(BaseModel):
         """
         return cls(name=name, **kwargs)
     
-    def set_supertask_of_subtask(self) -> None:
+    def set_supertask_of_subtasks(self) -> None:
         """
         Set this task as the parent of all its subtasks and propagate downward.
         """
@@ -80,12 +80,14 @@ class Task(BaseModel):
         self.subtasks.append(subtask)
         subtask.set_supertask(self, 'task')
         
-    def set_subtask_index(self) -> None:
+    def set_subtasks_index(self) -> None:
         """
         Update the index values for all subtasks based on their position.
         """
         for i, subtask in enumerate(self.subtasks):
             subtask.index = (i + 1)
+            if subtask.has_subtasks:
+                subtask.set_subtasks_index()
         
     def get_subtask(self, index: int) -> 'Subtask':
         """
@@ -188,7 +190,7 @@ class Task(BaseModel):
         if index < 0 or index >= len(self.subtasks):
             raise IndexError("Index out of bounds.")
         del self.subtasks[index]
-        self.set_subtask_index()
+        self.set_subtasks_index()
 
     def clear_subtasks(self) -> None:
         """

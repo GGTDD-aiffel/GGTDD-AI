@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Union, Any, List, TYPE_CHECKING
+from typing import Union, Any, List, TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from .Task import Task
@@ -27,9 +27,9 @@ class Subtask(BaseModel):
     """
     # basic information of the subtask
     name: str
-    id: Union[int, str] = None
-    index: int = None
-    context: str = None
+    id: Union[int, str] = 0
+    index: int = 0
+    context: str = ""
     
     # tags of the subtask
     location_tags: List[str] = []
@@ -42,19 +42,19 @@ class Subtask(BaseModel):
     subtasks: List['Subtask'] = None
     
     # super of the subtask
-    supertask_id: Union[int, str] = None
-    supertask_type: str = None
+    supertask_id: Union[int, str] = 0
+    supertask_type: str = ""
     
     _supertask: Any = None
     
-    def __init__(self, subtask_name: str):
+    def __init__(self, name: str, **kwargs):  # name을 필수 인수로 변경
         """
         Initialize a new subtask with the given name.
 
         Args:
-            subtask_name (str): The name of the subtask.
+            name (str): The name of the subtask.
         """
-        super().__init__(name=subtask_name)
+        super().__init__(name=name, **kwargs)  # **kwargs를 super().__init__()에 전달
     
     def get_supertask(self) -> Any:
         """Returns the parent task of this subtask."""
@@ -70,10 +70,10 @@ class Subtask(BaseModel):
         self._supertask = task
         self.supertask_id = getattr(task, 'id', None)
         self.supertask_type = task_type
-        
+    
     def set_supertask_of_subtasks(self) -> None:
         """Recursively sets the supertask of all subtasks."""
-        if self.has_subtasks and self.subtasks is not None:
+        if self.has_subtasks:
             for subtask in self.subtasks:
                 subtask.set_supertask(self, 'subtask')
                 subtask.set_supertask_of_subtasks()
@@ -84,17 +84,15 @@ class Subtask(BaseModel):
         Args:
             subtask (Subtask): The subtask to add.
         """
-        if self.subtasks is None:
-            self.subtasks = []
         if not self.has_subtasks:
+            self.subtasks = []
             self.has_subtasks = True
         self.subtasks.append(subtask)
     
     def set_subtasks_index(self) -> None:
         """Sets the index of each subtask in the subtasks list."""
-        if self.subtasks is not None:
-            for i, subtask in enumerate(self.subtasks):
-                subtask.index = (i + 1)
+        for i, subtask in enumerate(self.subtasks):
+            subtask.index = (i + 1)
     
     def print_self(self) -> None:
         """Prints the subtask's details, including its subtasks."""
@@ -107,7 +105,7 @@ class Subtask(BaseModel):
         print(f"- Supertask: {self.supertask_id} ({self.supertask_type})")
         print()
         
-        if self.has_subtasks and self.subtasks is not None:
+        if self.has_subtasks:
             print("Subtasks:")
             for subtask in self.subtasks:
                 subtask.print_self()
@@ -125,7 +123,7 @@ class Subtask(BaseModel):
             ValueError: If the subtask has no subtasks.
             IndexError: If the index is out of bounds.
         """
-        if not self.has_subtasks or self.subtasks is None:
+        if not self.has_subtasks:
             raise ValueError("This subtask has no subtasks.")
         if index < 0 or index >= len(self.subtasks):
             raise IndexError("Index out of bounds.")
@@ -137,23 +135,23 @@ class Subtask(BaseModel):
         Returns:
             List[Subtask]: A list containing all subtasks.
         """
-        subtasks: List['Subtask'] = []
+        all_subtasks: List['Subtask'] = []
         
-        if self.has_subtasks and self.subtasks is not None:
-            subtasks = self.subtasks.copy()    
+        if self.has_subtasks:
+            all_subtasks = self.subtasks.copy()    
             for subtask in self.subtasks:
-                subtasks += subtask.get_all_subtasks()
+                all_subtasks += subtask.get_all_subtasks()
             
-        return subtasks
+        return all_subtasks
     
     def set_total_estimated_minutes(self) -> None:
         """Calculates and sets the total estimated minutes based on its subtasks."""
-        if self.has_subtasks and self.subtasks is not None:
+        if self.has_subtasks:
             self.estimated_minutes = sum([subtask.estimated_minutes for subtask in self.subtasks])
             
             for subtask in self.subtasks:
                 subtask.set_total_estimated_minutes()
-
+    
     def update_subtask(self, index: int, subtask: 'Subtask') -> None:
         """Updates a subtask at the given index with a new subtask.
 
@@ -165,13 +163,13 @@ class Subtask(BaseModel):
             ValueError: If the subtask has no subtasks.
             IndexError: If the index is out of bounds.
         """
-        if not self.has_subtasks or self.subtasks is None:
+        if not self.has_subtasks:
             raise ValueError("This subtask has no subtasks.")
         if index < 0 or index >= len(self.subtasks):
             raise IndexError("Index out of bounds.")
         self.subtasks[index] = subtask
         subtask.set_supertask(self, 'subtask')
-    
+
     def remove_subtask(self, index: int) -> None:
         """Removes a subtask at the given index.
 
@@ -181,7 +179,7 @@ class Subtask(BaseModel):
         Raises:
             IndexError: If the index is out of bounds.
         """
-        if self.subtasks is None:
+        if not self.has_subtasks:
             raise IndexError("There are no subtasks to remove.")
         if index < 0 or index >= len(self.subtasks):
             raise IndexError("Index out of bounds.")
@@ -190,7 +188,7 @@ class Subtask(BaseModel):
     
     def clear_subtasks(self) -> None:
         """Clears all subtasks of this subtask recursively."""
-        if self.subtasks is not None:
+        if self.has_subtasks:
             for subtask in self.subtasks:
                 subtask.clear_subtasks()
         
@@ -203,4 +201,4 @@ class Subtask(BaseModel):
         Returns:
             int: The number of subtasks.
         """
-        return len(self.subtasks) if self.subtasks is not None else 0
+        return len(self.subtasks) if self.has_subtasks else 0
