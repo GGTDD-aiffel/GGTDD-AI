@@ -5,8 +5,8 @@ scene_generator = userdata.SceneGenerator(llm=ChatOpenAI(model_name="gpt-4o-mini
 task_generator = tasks.TaskGenerator(llm=ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5))
 
 user = userdata.User(name="윤형석",
-                     location="서울",
-                     birthdate="1990-03-28",
+                     residence="서울",
+                     birth_date="1990-03-28",
                      occupation="개발자",
                      personality=['Introverted', 'Intuitive', 'Thinking', 'Perceiving'],
                      prompt="",

@@ -10,14 +10,22 @@ if TYPE_CHECKING:
 
 class User(BaseModel):
     name: str
-    location: str
-    birthdate: datetime
+    user_id: int = 0 # 0 means not registered
+    email: str = ""
+
+    residence: str
+    birth_date: datetime
     occupation: str
     personality: list[str]
     scenes: list['Scene'] = []
-    prompt: str
+
     positives: list[str]
     negatives: list[str]
+    prompt: str
+
+    status: str = "active"
+    is_admin: bool = False
+
     
     @property
     def bio(self):
@@ -56,8 +64,8 @@ class User(BaseModel):
             
     def print_self(self):
         print(f"User: {self.name}")
-        print(f"- Location: {self.location}")
-        print(f"- Birthdate: {self.birthdate}")
+        print(f"- Location: {self.residence}")
+        print(f"- Birthdate: {self.birth_date}")
         print(f"- Occupation: {self.occupation}")
         print(f"- Personality: {self.personality}")
         print(f"- Positives: {self.positives}")
