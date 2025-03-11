@@ -86,4 +86,4 @@ class SceneGenerator:
                                "scenes": scenes,
                                "format_instruction": format_instruction})
         
-        return scenes
+        return scenes.scenes

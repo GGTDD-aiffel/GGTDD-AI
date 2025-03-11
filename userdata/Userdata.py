@@ -23,7 +23,7 @@ class User(BaseModel):
     def bio(self):
         return self.model_dump_json()
     
-    def set_prompt(self):
+    def generate_prompt(self):
         prompt_template = ChatPromptTemplate.from_template("""
         다음은 사용자 정보입니다. 이 정보를 바탕으로, 사용자의 성격과 하루 일과, 주요 관심사를를 상상해서 1문단으로 작성하세요.
         이를 작성하는 이유는 사용자의 할 일을 사용자의 생활패턴과 맥락에 맞게 구체화하여 추천하기 위해서입니다.
@@ -38,8 +38,6 @@ class User(BaseModel):
         {format_instruction}
 
         사용자 정보: {bio}
-
-        답변:
         """).partial(format_instruction=response_parser.get_format_instructions())
 
         llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5)
@@ -47,8 +45,27 @@ class User(BaseModel):
         chain = prompt_template | llm | response_parser
         responses = chain.invoke({"bio": self.bio})
         
-        self.prompt = responses[0]
+        return responses
+    
+    def set_prompt(self, responses: list[str], index: int):
+        self.prompt = responses[index]
         
+    def append_scenes(self, scenes: list['Scene']):
+        for scene in scenes:
+            self.scenes.append(scene)
+            
+    def print_self(self):
+        print(f"User: {self.name}")
+        print(f"- Location: {self.location}")
+        print(f"- Birthdate: {self.birthdate}")
+        print(f"- Occupation: {self.occupation}")
+        print(f"- Personality: {self.personality}")
+        print(f"- Positives: {self.positives}")
+        print(f"- Negatives: {self.negatives}")
+        print(f"- Prompt: {self.prompt}")
+        print(f"Daily Scenes of {self.name}:")
+        for scene in self.scenes:
+            scene.print_self()
 
 class CustomListOutputParser(BaseOutputParser):
     def parse(self, text: str) -> list[str]:
