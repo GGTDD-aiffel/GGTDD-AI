@@ -39,7 +39,7 @@ class Subtask(BaseModel):
     
     # subtasks of the subtask
     has_subtasks: bool = False
-    subtasks: List['Subtask'] = None
+    subtasks: List['Subtask'] = []
     
     # super of the subtask
     supertask_id: Union[int, str] = 0
@@ -92,7 +92,7 @@ class Subtask(BaseModel):
     def set_subtasks_index(self) -> None:
         """Sets the index of each subtask in the subtasks list."""
         for i, subtask in enumerate(self.subtasks):
-            subtask.index = (i + 1)
+            subtask.index = i + 1
     
     def print_self(self) -> None:
         """Prints the subtask's details, including its subtasks."""
@@ -144,13 +144,13 @@ class Subtask(BaseModel):
             
         return all_subtasks
     
-    def set_total_estimated_minutes(self) -> None:
+    def update_total_minutes(self) -> None:
         """Calculates and sets the total estimated minutes based on its subtasks."""
         if self.has_subtasks:
             self.estimated_minutes = sum([subtask.estimated_minutes for subtask in self.subtasks])
             
             for subtask in self.subtasks:
-                subtask.set_total_estimated_minutes()
+                subtask.update_total_minutes()
     
     def update_subtask(self, index: int, subtask: 'Subtask') -> None:
         """Updates a subtask at the given index with a new subtask.

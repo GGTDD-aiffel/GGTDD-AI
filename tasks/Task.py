@@ -152,7 +152,7 @@ class Task(BaseModel):
         """
         total_minutes = 0
         for subtask in self.subtasks:
-            subtask.set_total_estimated_minutes()
+            subtask.update_total_minutes()
             total_minutes += subtask.estimated_minutes
         return total_minutes
     
