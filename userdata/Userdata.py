@@ -9,6 +9,26 @@ if TYPE_CHECKING:
     from .Scene import *
 
 class User(BaseModel):
+    """사용자의 기본적인 정보를 나타내는 클래스입니다.
+
+    Attributes:
+        name (str): 사용자의 이름.
+        user_id (int): 사용자의 고유 식별자. 0은 등록되지 않은 사용자를 의미합니다.
+        email (str): 사용자의 이메일 주소.
+        
+        residence (str): 사용자의 거주지.
+        birth_date (datetime): 사용자의 생년월일.
+        occupation (str): 사용자의 직업.
+        personality (list[str]): ["Introverted", "Intuitive", "Thinking", "Perceiving"]와 같은 형태로 MBTI를 나타내는 문자열 리스트.
+        scenes (list[Scene]): 사용자의 하루 일과를 나타내는 Scene 객체의 리스트.
+
+        positives (list[str]): 사용자의 긍정적인 특성.
+        negatives (list[str]): 사용자의 부정적인 특성.
+        prompt (str): 사용자 정보를 바탕으로 생성된 프롬프트.
+
+        status (str): 사용자의 상태.
+        is_admin (bool): 사용자가 관리자인지 여부.
+    """
     name: str
     user_id: int = 0 # 0 means not registered
     email: str = ""
