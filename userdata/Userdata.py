@@ -82,18 +82,20 @@ class User(BaseModel):
         for scene in scenes:
             self.scenes.append(scene)
             
-    def print_self(self):
-        print(f"User: {self.name}")
-        print(f"- Location: {self.residence}")
-        print(f"- Birthdate: {self.birth_date}")
-        print(f"- Occupation: {self.occupation}")
-        print(f"- Personality: {self.personality}")
-        print(f"- Positives: {self.positives}")
-        print(f"- Negatives: {self.negatives}")
-        print(f"- Prompt: {self.prompt}")
-        print(f"Daily Scenes of {self.name}:")
+    def __str__(self) -> str:
+        result = [f"User: {self.name}"]
+        result.append(f"- Location: {self.residence}")
+        result.append(f"- Birthdate: {self.birth_date}")
+        result.append(f"- Occupation: {self.occupation}")
+        result.append(f"- Personality: {self.personality}")
+        result.append(f"- Positives: {self.positives}")
+        result.append(f"- Negatives: {self.negatives}")
+        result.append(f"- Prompt: {self.prompt}")
+        result.append("Daily Scenes:")
         for scene in self.scenes:
-            scene.print_self()
+            scene_str = str(scene).replace("\n", "\n  ")
+            result.append(f"  {scene_str}")
+        return "\n".join(result)
 
 class CustomListOutputParser(BaseOutputParser):
     def parse(self, text: str) -> list[str]:

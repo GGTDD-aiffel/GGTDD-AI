@@ -92,21 +92,26 @@ class Task(BaseTask):
             subtask.supertask = self
             subtask.set_supertask()
     
-    def print_self(self) -> None:
+    def __str__(self) -> str:
         """
-        작업의 세부 정보(하위 작업 포함)를 출력합니다.
+        작업의 문자열 표현을 반환합니다.
         """
-        print(f"Task: {self.name}")
-        print(f"- Context: {self.context}")
-        print(f"- Location Tags: {self.location_tags}")
-        print(f"- Time Tags: {self.time_tags}")
-        print(f"- Other Tags: {self.other_tags}")
-        print(f"- Estimated Minutes: {self.estimated_minutes}")
-        print()
+        result = [f"Task: {self.name}"]
+        result.append(f"- Context: {self.context}")
+        result.append(f"- Location Tags: {self.location_tags}")
+        result.append(f"- Time Tags: {self.time_tags}")
+        result.append(f"- Other Tags: {self.other_tags}")
+        result.append(f"- Estimated Minutes: {self.estimated_minutes}")
+        result.append("")
         
-        print("Subtasks:")
-        for subtask in self.subtasks:
-            subtask.print_self()
+        if self.subtasks:
+            result.append("Subtasks:")
+            for subtask in self.subtasks:
+                # 들여쓰기를 적용하여 계층 구조 표현
+                subtask_str = str(subtask).replace("\n", "\n  ")
+                result.append(f"  {subtask_str}")
+        
+        return "\n".join(result)
     
     def calculate_total_minutes(self) -> int:
         """
@@ -121,8 +126,19 @@ class Task(BaseTask):
             total_minutes += subtask.estimated_minutes
         return total_minutes
     
-    def update_total_minutes(self) -> None:
+    def update_total_minutes(self) -> int:
         """
-        하위 작업을 기반으로 estimated_minutes를 업데이트합니다.
+        하위 작업 기반으로 예상 시간을 계산하고 자신의 estimated_minutes를 업데이트합니다.
+        
+        Returns:
+            int: 계산된 총 예상 시간(분).
         """
-        self.estimated_minutes = self.calculate_total_minutes()
+        total_minutes = 0
+        for subtask in self.subtasks:
+            subtask.update_total_minutes()
+            total_minutes += subtask.estimated_minutes
+        
+        # 자신의 estimated_minutes 업데이트
+        self.estimated_minutes = total_minutes
+        
+        return total_minutes
