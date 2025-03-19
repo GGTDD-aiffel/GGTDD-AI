@@ -51,6 +51,26 @@ class Subtask(BaseTask):
         """이 하위 작업의 상위 작업을 반환합니다."""
         return self._supertask
     
+    def get_supermosttask(self) -> 'Task':
+        """이 하위 작업의 최상위 작업을 반환합니다."""
+        from .Task import Task
+        
+        supertask = self.get_supertask()
+        
+        if supertask is None:
+            raise ValueError("This subtask has no supertask.")
+        
+        while not isinstance(supertask, Task):
+            if not hasattr(supertask, 'get_supertask'):
+                raise ValueError(f"Unexpected supertask type: {type(supertask)}")
+
+            supertask = supertask.get_supertask()
+            
+            if supertask is None:
+                raise ValueError("Supertask chain broken before reaching Task")
+            
+        return supertask
+
     def set_supertask(self, task: Any, task_type: str) -> None:
         """이 하위 작업의 상위 작업을 설정합니다.
 

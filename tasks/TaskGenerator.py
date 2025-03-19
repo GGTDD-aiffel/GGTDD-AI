@@ -36,6 +36,7 @@ class TaskGenerator:
         사용자의 인적 정보: {bio}
         사용자의 하루 일과: {prompt}
         사용자가 입력한 할 일: {task}
+        생성할 서브태스크의 수: {subtask_num}
         지침: {format_instruction}
         """
         
@@ -76,13 +77,14 @@ class TaskGenerator:
         self.prompt_kwargs = prompt_context
         self._prompt_template = self._create_prompt_template()
 
-    def generate_task(self, user: User, task_name: str) -> Task:
+    def generate_task(self, user: User, task_name: str, subtask_num = 5) -> Task:
         """
         주어진 사용자 정보와 태스크 이름을 사용하여 태스크를 생성합니다.
         
         Args:
             user (User): 사용자 정보
             task_name (str): 생성할 태스크의 이름
+            subtask_num (int): 생성할 서브태스크의 수
             
         Returns:
             Task: 생성된 태스크 객체
@@ -97,6 +99,7 @@ class TaskGenerator:
             "bio": user.bio,
             "prompt": user.prompt,
             "task": task_name,
+            "subtask_num": subtask_num,
             "format_instruction": format_instruction})
         
         task.set_supertask_of_subtasks()
@@ -104,13 +107,14 @@ class TaskGenerator:
         task.update_total_minutes()
         return task
 
-    def generate_subtasks(self, user: User, task_to_breakdown: Task|Subtask):
+    def generate_subtasks(self, user: User, task_to_breakdown: Task|Subtask, subtask_num=3) -> Task|Subtask:
         """
         주어진 사용자 정보와 태스크를 세부적으로 나눕니다.
         
         Args:
             user (User): 사용자 정보
             task_to_breakdown (Task|Subtask): 세부적으로 나눌 태스크
+            subtask_num (int): 생성할 서브태스크의 수
         """
         if not task_to_breakdown:
             raise ValueError("세부적으로 나눌 태스크가 주어지지 않았습니다.")
@@ -121,21 +125,12 @@ class TaskGenerator:
         chain = self._prompt_template | self.llm | str_parser
         format_instruction = self.subtask_parser.get_format_instructions()
         
-        # LLM에게 태스크 이름과 컨텍스트 전달
-        task_info = {
-            "name": task_to_breakdown.name,
-            "context": task_to_breakdown.context,
-            "estimated_minutes": task_to_breakdown.estimated_minutes,
-            "location_tags": task_to_breakdown.location_tags,
-            "time_tags": task_to_breakdown.time_tags,
-            "other_tags": task_to_breakdown.other_tags
-        }
-        
         # LLM 호출 및 응답 가져오기
         raw_output = chain.invoke({
             "bio": user.bio,
             "prompt": user.prompt, 
-            "task": json.dumps(task_info),
+            "task": str(task_to_breakdown),
+            "subtask_num": subtask_num,
             "format_instruction": format_instruction
         })
         
@@ -150,6 +145,13 @@ class TaskGenerator:
         task_to_breakdown.set_supertask_of_subtasks()
         task_to_breakdown.set_subtasks_index()
         task_to_breakdown.update_total_minutes()
+        
+        # 전체 태스크 소요시간 업데이트
+        if isinstance(task_to_breakdown, Subtask):
+            supermosttask = task_to_breakdown.get_supermosttask()
+        else:
+            supermosttask = task_to_breakdown
+        supermosttask.update_total_minutes()
         
         return task_to_breakdown
 

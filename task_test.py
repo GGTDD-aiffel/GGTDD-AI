@@ -26,10 +26,8 @@ user.append_scenes(scenes)
 responses = user.generate_prompt()    
 user.set_prompt(responses=responses, index=0)
 
-user.print_self()
+task = task_generator.generate_task(user=user, task_name="체중 감량을 위해 운동하기", subtask_num=5)
+# task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(0), subtask_num=2)
+# task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(2), subtask_num=3)
 
-task = task_generator.generate_task(user=user, task_name="체중 감량을 위해 운동하기")
-task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(0))
-task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(2))
-
-task.print_self()
+print(task)
