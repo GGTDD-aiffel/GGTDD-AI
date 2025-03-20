@@ -23,11 +23,11 @@ scenes = scene_generator.generate_scenes(user=user,
                                                 "애완동물 돌보기"])
 user.append_scenes(scenes)
     
-responses = user.generate_prompt()    
+responses = user.generate_prompt()
 user.set_prompt(responses=responses, index=0)
 
-task = task_generator.generate_task(user=user, task_name="체중 감량을 위해 운동하기", subtask_num=5)
-# task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(0), subtask_num=2)
-# task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(2), subtask_num=3)
+task = task_generator.generate_task(user=user, task_name="체중 감량을 위해 운동하기", subtask_num=0)
+task_generator.generate_subtasks(user=user, task_to_breakdown=task, subtask_num=5)
+task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(2), subtask_num=3)
 
 print(task)

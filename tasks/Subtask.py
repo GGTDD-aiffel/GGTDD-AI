@@ -6,35 +6,36 @@ if TYPE_CHECKING:
 
 class Subtask(BaseTask):
     """
-    더 큰 작업 내의 하위 작업을 나타냅니다.
+    상위 작업(Task 또는 다른 Subtask) 내의 하위 작업을 나타내는 클래스입니다.
+    
+    Subtask는 BaseTask를 상속받아 기본 속성(이름, 태그 등)을 포함하며,
+    상위 작업과의 관계 관리 및 중첩된 하위 작업 지원 기능을 추가합니다.
     
     Attributes:
-        name (str): 하위 작업의 이름.
-        id (Optional[Union[int, str]]): 하위 작업의 고유 식별자.
-        index (Optional[int]): 상위 작업 내 하위 작업의 인덱스.
-        context (Optional[str]): 하위 작업에 대한 설명 또는 컨텍스트.
-
-        location_tags (List[str]): 하위 작업 위치와 관련된 태그.
-        time_tags (List[str]): 하위 작업 시간과 관련된 태그.
-        other_tags (List[str]): 기타 관련 태그.
-        estimated_minutes (int): 하위 작업 완료 예상 시간(분).
-
-        has_subtasks (bool): 하위 작업에 자체 하위 작업이 있는지 여부.
-        subtasks (Optional[List['Subtask']]): 이 하위 작업에 속하는 하위 작업 목록.
-
-        supertask_id (Optional[Union[int, str]]): 상위 작업의 ID.
-        supertask_type (Optional[str]): 상위 작업의 유형.
+        모든 BaseTask 속성을 상속받습니다.
+        
+        index (int): 상위 작업 내에서의 순서를 나타내는 인덱스 (기본값: 0).
+        supertask_id (Union[int, str]): 상위 작업의 ID (기본값: 0).
+        supertask_type (str): 상위 작업의 유형 ('task' 또는 'subtask') (기본값: "").
+        _supertask (Any): 상위 작업에 대한 내부 참조 (기본값: None).
+    
+    Methods:
+        get_supertask: 상위 작업 객체를 반환합니다.
+        get_supermosttask: 재귀적으로 최상위 Task를 반환합니다.
+        set_supertask: 상위 작업 참조와 관련 정보를 설정합니다.
+        set_supertask_of_subtasks: 이 Subtask를 하위 Subtask들의 상위 작업으로 설정합니다.
+        add_subtask: 새 Subtask를 이 Subtask의 하위 작업으로 추가합니다.
+        get_all_subtasks: 모든 중첩된 하위 Subtask의 평면화된 목록을 반환합니다.
+        update_total_minutes: 모든 하위 Subtask의 예상 시간을 합산하여 자신의 예상 시간을 업데이트합니다.
+        count_subtasks: 직접적인 하위 Subtask의 수를 반환합니다.
     """
     # 하위 작업의 기본 정보
     index: int = 0
-    
-    # 하위 작업의 하위 작업
-    has_subtasks: bool = False
-    subtasks: List['Subtask'] = []
-    
-    # 하위 작업의 상위
     supertask_id: Union[int, str] = 0
     supertask_type: str = ""
+    
+    # 하위 작업의 하위 작업
+    subtasks: List['Subtask'] = []
     
     _supertask: Any = None
     

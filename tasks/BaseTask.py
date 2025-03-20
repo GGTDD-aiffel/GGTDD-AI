@@ -7,16 +7,27 @@ if TYPE_CHECKING:
 
 class BaseTask(BaseModel):
     """
-    Task와 Subtask의 공통 기능을 제공하는 기본 클래스입니다.
+    Task와 Subtask의 공통 기능과 구조를 제공하는 추상 기본 클래스입니다.
+    
+    이 클래스는 작업 관리 시스템의 기반이 되는 공통 속성과 메서드를 정의합니다.
+    직접 인스턴스화하지 않으며, 항상 Task나 Subtask 클래스를 통해 사용합니다.
     
     Attributes:
         name (str): 작업의 이름.
-        id (Union[int, str]): 작업의 고유 식별자.
-        context (str): 작업에 대한 설명 또는 컨텍스트.
-        location_tags (List[str]): 작업 위치와 관련된 태그.
-        time_tags (List[str]): 작업 시간과 관련된 태그.
-        other_tags (List[str]): 기타 관련 태그.
-        estimated_minutes (int): 작업 완료 예상 시간(분).
+        id (Union[int, str]): 작업의 고유 식별자 (기본값: 0).
+        context (str): 작업에 대한 설명이나 배경 정보 (기본값: "").
+        
+        location_tags (List[str]): 작업 수행 위치와 관련된 태그 (기본값: []).
+        time_tags (List[str]): 작업 수행 시간과 관련된 태그 (기본값: []).
+        other_tags (List[str]): 기타 관련 태그 (기본값: []).
+        estimated_minutes (int): 작업 완료 예상 시간(분) (기본값: 0).
+        
+        has_subtasks (bool): 이 작업에 하위 작업이 있는지 여부 (기본값: False).
+        subtasks (List["Subtask"]): 이 작업에 속하는 하위 작업 목록 (기본값: []).
+    
+    Notes:
+        'get_all_subtasks', 'print_self', 'set_supertask_of_subtasks', 'update_total_minutes' 
+        메서드는 서브클래스에서 구현해야 합니다.
     """
     name: str
     id: Union[int, str] = 0
@@ -27,10 +38,11 @@ class BaseTask(BaseModel):
     other_tags: List[str] = []
     estimated_minutes: int = 0
     
-    # 타입 힌팅을 위한 subtasks 선언 - 실제 구현은 서브클래스에서
-    subtasks: List[Any] = []
+    # 하위 작업 관련 필드 (모든 하위 클래스에서 공통 사용)
+    has_subtasks: bool = False
+    subtasks: List["Subtask"] = []
     
-    def add_subtask(self, subtask: Any) -> None:
+    def add_subtask(self, subtask: "Subtask") -> None:
         """
         새 하위 작업을 추가합니다.
         

@@ -1,4 +1,4 @@
-from typing import List, Union, TYPE_CHECKING
+from typing import List, Union, Optional, TYPE_CHECKING
 from .BaseTask import BaseTask
 
 if TYPE_CHECKING:
@@ -7,19 +7,26 @@ if TYPE_CHECKING:
 
 class Task(BaseTask):
     """
-    이름, 선택적 ID, 컨텍스트, 태그, 예상 시간 및 하위 작업이 있는 작업을 나타냅니다.
-
+    작업 관리 시스템의 최상위 작업(Task)을 나타내는 클래스입니다.
+    
+    Task는 BaseTask를 상속받아 기본 속성(이름, 태그 등)을 포함하며,
+    LLM 생성 여부 추적 및 하위 작업(Subtask) 관리 기능을 추가합니다.
+    
     Attributes:
-        name (str): 작업의 이름.
-        id (Optional[Union[int, str]]): 작업의 고유 식별자.
-        context (str): 작업에 대한 설명 또는 컨텍스트.
+        모든 BaseTask 속성을 상속받습니다.
         
-        location_tags (List[str]): 작업 위치와 관련된 태그.
-        time_tags (List[str]): 작업 시간과 관련된 태그.
-        other_tags (List[str]): 기타 관련 태그.
-        estimated_minutes (int): 작업 완료 예상 시간(분).
-
-        subtasks (List[Subtask]): 이 작업에 속하는 하위 작업 목록.
+        _llm_generated (bool): 이 Task가 LLM에 의해 생성되었는지 추적하는 내부 필드 (기본값: False).
+    
+    Class Methods:
+        create_for_testing: 테스트 목적으로 Task 객체를 생성합니다.
+    
+    Methods:
+        require_llm_generation: 이 Task가 LLM에 의해 생성되었는지 확인합니다.
+        set_supertask_of_subtasks: Task를 모든 하위 Subtask의 상위 작업으로 설정합니다.
+        add_subtask: 새로운 Subtask를 추가합니다.
+        get_all_subtasks: 모든 하위 Subtask의 평면화된 목록을 반환합니다.
+        update_total_minutes: 모든 하위 Subtask의 예상 시간을 합산하여 자신의 예상 시간을 업데이트합니다.
+        calculate_total_minutes: 자신을 수정하지 않고 모든 하위 Subtask의 총 예상 시간을 계산합니다.
     """
     # LLM 생성 여부를 추적하는 프라이빗 필드
     _llm_generated: bool = False
@@ -134,11 +141,13 @@ class Task(BaseTask):
             int: 계산된 총 예상 시간(분).
         """
         total_minutes = 0
+        
         for subtask in self.subtasks:
             subtask.update_total_minutes()
             total_minutes += subtask.estimated_minutes
-        
+
         # 자신의 estimated_minutes 업데이트
-        self.estimated_minutes = total_minutes
+        if total_minutes > 0:
+            self.estimated_minutes = total_minutes
         
-        return total_minutes
+        return self.estimated_minutes
