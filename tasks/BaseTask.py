@@ -36,8 +36,7 @@ class BaseTask(BaseModel):
     time_tags: List[str] = []
     other_tags: List[str] = []
     estimated_minutes: int = 0
-    
-    # 하위 작업 관련 필드 (모든 하위 클래스에서 공통 사용)
+
     has_subtasks: bool = False
     subtasks: List["Subtask"] = []
     

@@ -56,7 +56,6 @@ class User(BaseModel):
 
     status: str = "active"
     is_admin: bool = False
-
     
     @property
     def bio(self):
@@ -72,6 +71,7 @@ class User(BaseModel):
         작성된 내용 중 사용자가 적합한 것을 선택할 수 있도록, 서로 다른 내용의 답변을 3~5개 생성하세요.
         각각의 답변은 사용자 정보의 다른 부분에 집중하며, 서로 비슷하지 않은 내용이어야 합니다.
         예를 들어 한 답변이 "대중교통"이라는 키워드에 집중한다면, 다른 답변은 "도서관" 등 다른 맥락에 집중할 수 있습니다.
+        그러나 모든 답변은 사용자의 전반적인 일상을 구성할 수 있어야 합니다.
         만약 비슷한 답변이 생성된다면 생략하세요.
 
         {format_instruction}

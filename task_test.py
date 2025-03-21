@@ -31,7 +31,7 @@ prompt_index = input("프롬프트 중 선택할 인덱스를 입력하세요: "
 user.set_prompt(responses=responses, index=int(prompt_index))
 print(user)
 
-task = task_generator.generate_task(user=user, task_name="체중 감량을 위해 운동하기", subtask_num=0)
+task = task_generator.generate_task(user=user, task_name="에견카페 방문하기", subtask_num=0)
 print(task)
 subtask_num = input("하위 작업의 개수를 입력하세요: ")
 task_generator.generate_subtasks(user=user, task_to_breakdown=task, subtask_num=int(subtask_num))
