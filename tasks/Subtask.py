@@ -26,7 +26,8 @@ class Subtask(BaseTask):
         set_supertask_of_subtasks: 이 Subtask를 하위 Subtask들의 상위 작업으로 설정합니다.
         add_subtask: 새 Subtask를 이 Subtask의 하위 작업으로 추가합니다.
         get_all_subtasks: 모든 중첩된 하위 Subtask의 평면화된 목록을 반환합니다.
-        update_total_minutes: 모든 하위 Subtask의 예상 시간을 합산하여 자신의 예상 시간을 업데이트합니다.
+        update_estimated_minutes: 모든 하위 Subtask의 예상 시간을 합산하여 자신의 예상 시간을 업데이트합니다.
+        update_estimated_minutes_all: 이 Subtask를 포함한 모든 상위 Task의 예상 시간을 업데이트합니다.
         count_subtasks: 직접적인 하위 Subtask의 수를 반환합니다.
     """
     # 하위 작업의 기본 정보
@@ -101,6 +102,8 @@ class Subtask(BaseTask):
             self.has_subtasks = True
         super().add_subtask(subtask)
         subtask.set_supertask(self, 'subtask')
+        
+        self.update_estimated_minutes_all()
     
     def __str__(self) -> str:
         """
@@ -156,14 +159,11 @@ class Subtask(BaseTask):
             
         return all_subtasks
     
-    def update_total_minutes(self) -> None:
-        """하위 작업을 기반으로 총 예상 시간을 계산하고 설정합니다."""
-        if self.has_subtasks:
-            self.estimated_minutes = sum([subtask.estimated_minutes for subtask in self.subtasks])
-            
-            for subtask in self.subtasks:
-                subtask.update_total_minutes()
-    
+    def update_estimated_minutes_all(self) -> None:
+        """해당 하위 작업의 상위 작업을 포함한 모든 상위 작업의 예상 시간을 업데이트합니다."""
+        supermosttask = self.get_supermosttask()
+        supermosttask.update_estimated_minutes()
+
     def update_subtask(self, index: int, subtask: 'Subtask') -> None:
         """주어진 인덱스의 하위 작업을 새 하위 작업으로 업데이트합니다.
 
@@ -192,7 +192,7 @@ class Subtask(BaseTask):
         if not self.has_subtasks:
             raise IndexError("There are no subtasks to remove.")
         super().remove_subtask(index)
-    
+
     def clear_subtasks(self) -> None:
         """이 하위 작업의 모든 하위 작업을 재귀적으로 지웁니다."""
         if self.has_subtasks:
@@ -208,4 +208,4 @@ class Subtask(BaseTask):
         Returns:
             int: 하위 작업 수.
         """
-        return len(self.subtasks) if self.has_subtasks else 0
+        return len(self.subtasks)

@@ -26,8 +26,7 @@ class BaseTask(BaseModel):
         subtasks (List["Subtask"]): 이 작업에 속하는 하위 작업 목록 (기본값: []).
     
     Notes:
-        'get_all_subtasks', 'print_self', 'set_supertask_of_subtasks', 'update_total_minutes' 
-        메서드는 서브클래스에서 구현해야 합니다.
+        'get_all_subtasks', 'set_supertask_of_subtasks' 메서드는 서브클래스에서 구현해야 합니다.
     """
     name: str
     id: Union[int, str] = 0
@@ -117,13 +116,6 @@ class BaseTask(BaseModel):
         # 서브클래스에서 구현
         pass
     
-    def print_self(self) -> None:
-        """
-        작업의 세부 정보를 출력합니다.
-        """
-        # 서브클래스에서 구현
-        pass
-    
     def clear_subtasks(self) -> None:
         """
         모든 하위 작업을 제거합니다.
@@ -137,9 +129,45 @@ class BaseTask(BaseModel):
         # 서브클래스에서 구현
         pass
         
-    def update_total_minutes(self) -> None:
+    def update_estimated_minutes(self) -> int:
+        """자신을 포함한 모든 하위작업의 estimated_minutes를 하위작업 기반으로 업데이트합니다.
+        
+        Returns:
+            int: 업데이트된 총 예상 시간(분).
         """
-        하위 작업을 기반으로 예상 시간을 업데이트합니다.
-        """
-        # 서브클래스에서 구현
-        pass
+        if not self.has_subtasks or not self.subtasks:
+            return self.estimated_minutes
+            
+        # 후위 순회(post-order traversal) 방식으로 구현
+        stack = []
+        visited = set()  # 객체 ID를 저장할 셋
+        current = self
+        
+        # 깊이 우선 탐색으로 모든 노드 처리
+        while True:
+            # 현재 노드의 모든 자식 노드를 스택에 추가
+            if current.has_subtasks and id(current) not in visited:
+                stack.append(current)
+                visited.add(id(current))  # 객체 대신 ID 저장
+                if current.subtasks:
+                    current = current.subtasks[0]
+                    continue
+            
+            # 리프 노드이거나 이미 처리된 노드일 경우 처리
+            if current.has_subtasks:
+                current.estimated_minutes = sum(subtask.estimated_minutes for subtask in current.subtasks)
+            
+            # 스택이 비어있으면 종료
+            if not stack:
+                break
+                
+            # 다음 처리할 노드 결정
+            parent = stack[-1]
+            if parent.subtasks.index(current) + 1 < len(parent.subtasks):
+                # 다음 형제 노드로 이동
+                current = parent.subtasks[parent.subtasks.index(current) + 1]
+            else:
+                # 부모 노드로 돌아감
+                current = stack.pop()
+        
+        return self.estimated_minutes

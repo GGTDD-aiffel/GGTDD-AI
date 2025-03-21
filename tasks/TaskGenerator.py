@@ -23,11 +23,13 @@ class TaskGenerator:
         self.prompt_main: str = """
         다음은 사용자가 입력한 해야 할 일입니다. 이 할 일에 대한 구체적인 서브태스크를 주어진 숫자에 맞추어 작성하세요.
         단, 생성할 서브태스크의 수가 0으로 주어진다면 서브태스크를 생성하지 않고, 태스크만 생성합니다.
+        서브태스크에만 존재하는 필드를 태스크에 생성하지 않도록 주의하세요.
 
         Context는 사용자의 하루에 비추어 해당하는 할 일을 수행하는 맥락을 나타냅니다.
         시간 태그에는 휴일 여부, 요일, 하루 중의 시간대 등의 정보를 포함하세요.
         공간 태그에는 사용자의 위치, 활동하는 장소 등의 정보를 포함하세요.
         기타 태그에는 시간과 공간 태그에 포함되지 않지만 할 일의 맥락과 상황을 검색하기에 좋은 정보를 포함하세요.
+        각각의 태그는 되도록이면 사용자의 인적 정보에 포함되어 있는 태그 정보를 활용하여 작성하세요.
         위 내용은 태스크와 서브태스크에 공통으로 적용됩니다.
         
         서브태스크를 생성할 때에는, 각 서브태스크를 수행하는 데에 필요한 노력과 시간을 고려하세요.
@@ -105,7 +107,7 @@ class TaskGenerator:
         
         task.set_supertask_of_subtasks()
         task.set_subtasks_index()
-        task.update_total_minutes()
+        task.update_estimated_minutes()
         return task
 
     def generate_subtasks(self, user: User, task_to_breakdown: Task|Subtask, subtask_num=3) -> Task|Subtask:
@@ -145,14 +147,13 @@ class TaskGenerator:
         # 관계 설정
         task_to_breakdown.set_supertask_of_subtasks()
         task_to_breakdown.set_subtasks_index()
-        task_to_breakdown.update_total_minutes()
+        task_to_breakdown.update_estimated_minutes()
         
         # 전체 태스크 소요시간 업데이트
         if isinstance(task_to_breakdown, Subtask):
-            supermosttask = task_to_breakdown.get_supermosttask()
+            task_to_breakdown.update_estimated_minutes_all()
         else:
-            supermosttask = task_to_breakdown
-        supermosttask.update_total_minutes()
+            task_to_breakdown.update_estimated_minutes()
         
         return task_to_breakdown
 

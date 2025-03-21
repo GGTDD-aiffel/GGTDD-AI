@@ -129,25 +129,6 @@ class Task(BaseTask):
         """
         total_minutes = 0
         for subtask in self.subtasks:
-            subtask.update_total_minutes()
+            subtask.update_estimated_minutes()
             total_minutes += subtask.estimated_minutes
         return total_minutes
-    
-    def update_total_minutes(self) -> int:
-        """
-        하위 작업 기반으로 예상 시간을 계산하고 자신의 estimated_minutes를 업데이트합니다.
-        
-        Returns:
-            int: 계산된 총 예상 시간(분).
-        """
-        total_minutes = 0
-        
-        for subtask in self.subtasks:
-            subtask.update_total_minutes()
-            total_minutes += subtask.estimated_minutes
-
-        # 자신의 estimated_minutes 업데이트
-        if total_minutes > 0:
-            self.estimated_minutes = total_minutes
-        
-        return self.estimated_minutes
