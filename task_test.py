@@ -9,9 +9,7 @@ user = userdata.User(name="윤형석",
                      birth_date="1990-03-28",
                      occupation="개발자",
                      personality=['Introverted', 'Intuitive', 'Thinking', 'Perceiving'],
-                     prompt="",
-                     positives=["지적 호기심", "사고력", "창의력"],
-                     negatives=["ADHD", "불안", "피로감"])
+                     prompt="")
 
 scenes = scene_generator.generate_scenes(user=user,
                                          scenes=["출퇴근길",
@@ -22,12 +20,22 @@ scenes = scene_generator.generate_scenes(user=user,
                                                 "유튜브 시청",
                                                 "애완동물 돌보기"])
 user.append_scenes(scenes)
-    
+user.collect_tags()
+
 responses = user.generate_prompt()
-user.set_prompt(responses=responses, index=0)
+
+for i, response in enumerate(responses):
+    print(f"{i}: {response}")
+
+prompt_index = input("프롬프트 중 선택할 인덱스를 입력하세요: ")
+user.set_prompt(responses=responses, index=int(prompt_index))
+print(user)
 
 task = task_generator.generate_task(user=user, task_name="체중 감량을 위해 운동하기", subtask_num=0)
-task_generator.generate_subtasks(user=user, task_to_breakdown=task, subtask_num=5)
-task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(2), subtask_num=3)
-
+print(task)
+subtask_num = input("하위 작업의 개수를 입력하세요: ")
+task_generator.generate_subtasks(user=user, task_to_breakdown=task, subtask_num=int(subtask_num))
+print(task)
+task_to_break = input("하위 작업을 추가할 상위 작업의 인덱스를 입력하세요: ")
+task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(int(task_to_break)-1), subtask_num=3)
 print(task)

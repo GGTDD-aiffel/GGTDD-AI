@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from .Scene import *
 
 class User(BaseModel):
-    """사용자의 기본적인 정보를 나타내는 클래스입니다.
+    """사용자의 기본적인 정보와 일상을 나타내는 클래스입니다.
 
     Attributes:
         name (str): 사용자의 이름.
@@ -22,12 +22,22 @@ class User(BaseModel):
         personality (list[str]): ["Introverted", "Intuitive", "Thinking", "Perceiving"]와 같은 형태로 MBTI를 나타내는 문자열 리스트.
         scenes (list[Scene]): 사용자의 하루 일과를 나타내는 Scene 객체의 리스트.
 
-        positives (list[str]): 사용자의 긍정적인 특성.
-        negatives (list[str]): 사용자의 부정적인 특성.
+        location_tags (list[str]): 사용자 일과 장소에서 추출된 위치 태그 모음.
+        time_tags (list[str]): 사용자 일과 시간에서 추출된 시간 태그 모음.
+        other_tags (list[str]): 사용자 일과에서 추출된 기타 태그 모음.
         prompt (str): 사용자 정보를 바탕으로 생성된 프롬프트.
 
-        status (str): 사용자의 상태.
+        status (str): 사용자의 상태(active, inactive 등).
         is_admin (bool): 사용자가 관리자인지 여부.
+
+    Properties:
+        bio: 사용자 정보를 JSON 문자열로 반환합니다.
+
+    Methods:
+        generate_prompt(): 사용자 정보를 바탕으로 다양한 프롬프트 응답을 생성합니다.
+        set_prompt(responses, index): 생성된 프롬프트 중 하나를 선택하여 설정합니다.
+        append_scenes(scenes): 사용자의 일과에 새로운 장면들을 추가합니다.
+        collect_tags(): 모든 장면에서 태그를 수집하고 중복을 제거합니다.
     """
     name: str
     user_id: int = 0 # 0 means not registered
@@ -39,8 +49,9 @@ class User(BaseModel):
     personality: list[str]
     scenes: list['Scene'] = []
 
-    positives: list[str]
-    negatives: list[str]
+    location_tags: list[str] = []
+    time_tags: list[str] = []
+    other_tags: list[str] = []
     prompt: str
 
     status: str = "active"
@@ -81,6 +92,22 @@ class User(BaseModel):
     def append_scenes(self, scenes: list['Scene']):
         for scene in scenes:
             self.scenes.append(scene)
+    
+    def collect_tags(self):
+        location_tags = []
+        time_tags = []
+        other_tags = []
+
+        for scene in self.scenes:
+            location_tags += scene.location_tags
+            time_tags += scene.time_tags
+            other_tags += scene.other_tags
+
+        self.location_tags = list(set(location_tags))
+        self.time_tags = list(set(time_tags))
+        self.other_tags = list(set(other_tags))
+
+        return self.location_tags, self.time_tags, self.other_tags
             
     def __str__(self) -> str:
         result = [f"User: {self.name}"]
@@ -88,8 +115,9 @@ class User(BaseModel):
         result.append(f"- Birthdate: {self.birth_date}")
         result.append(f"- Occupation: {self.occupation}")
         result.append(f"- Personality: {self.personality}")
-        result.append(f"- Positives: {self.positives}")
-        result.append(f"- Negatives: {self.negatives}")
+        result.append(f"- Location Tags: {self.location_tags}")
+        result.append(f"- Time Tags: {self.time_tags}")
+        result.append(f"- Other Tags: {self.other_tags}")
         result.append(f"- Prompt: {self.prompt}")
         result.append("Daily Scenes:")
         for scene in self.scenes:
