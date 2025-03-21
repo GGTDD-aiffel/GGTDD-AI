@@ -145,15 +145,15 @@ class BaseTask(BaseModel):
         
         # 깊이 우선 탐색으로 모든 노드 처리
         while True:
-            # 현재 노드의 모든 자식 노드를 스택에 추가
+            # 현재 노드의 모든 첫번째 자식 노드를 스택에 추가
             if current.has_subtasks and id(current) not in visited:
                 stack.append(current)
                 visited.add(id(current))  # 객체 대신 ID 저장
                 if current.subtasks:
                     current = current.subtasks[0]
-                    continue
+                    continue # 다음 자식 노드로 이동
             
-            # 리프 노드이거나 이미 처리된 노드일 경우 처리
+            # 현재 노드가 하위 작업을 가지고 있다면, 모든 하위 작업의 시간 합계로 업데이트
             if current.has_subtasks:
                 current.estimated_minutes = sum(subtask.estimated_minutes for subtask in current.subtasks)
             
