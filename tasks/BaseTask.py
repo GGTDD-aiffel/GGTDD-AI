@@ -40,6 +40,8 @@ class BaseTask(BaseModel):
     has_subtasks: bool = False
     subtasks: List["Subtask"] = []
     
+    comments: List[str] = []
+    
     def add_subtask(self, subtask: "Subtask") -> None:
         """
         새 하위 작업을 추가합니다.
@@ -170,3 +172,65 @@ class BaseTask(BaseModel):
                 current = stack.pop()
         
         return self.estimated_minutes
+    
+    def add_comments(self, comment: str) -> None:
+        """
+        주어진 댓글을 작업에 추가합니다.
+        
+        Args:
+            comment (str): 추가할 댓글.
+        """
+       
+        self.comments.append(comment)
+    
+    def clear_comments(self) -> None:
+        """
+        모든 댓글을 제거합니다.
+        """
+        self.comments.clear()
+    
+    def delete_comments(self, index: int) -> None:
+        """
+        특정 인덱스의 댓글을 제거합니다.
+        
+        Args:
+            index (int): 제거할 댓글의 인덱스.
+        """
+        if index < 0 or index >= len(self.comments):
+            raise IndexError("Index out of bounds.")
+        del self.comments[index]
+    
+    def update_comments(self, index: int, comment: str) -> None:
+        """
+        특정 인덱스의 댓글을 업데이트합니다.
+        
+        Args:
+            index (int): 업데이트할 댓글의 인덱스.
+            comment (str): 새 댓글.
+        """
+        if index < 0 or index >= len(self.comments):
+            raise IndexError("Index out of bounds.")
+        self.comments[index] = comment
+    
+    def get_comments(self, index: int) -> str:
+        """
+        특정 인덱스의 댓글을 반환합니다.
+        
+        Args:
+            index (int): 가져올 댓글의 인덱스.
+            
+        Returns:
+            str: 댓글.
+        """
+        if index < 0 or index >= len(self.comments):
+            raise IndexError("Index out of bounds.")
+        return self.comments[index]
+    
+    def get_all_commnets(self) -> List[str]:
+        """
+        모든 댓글을 반환합니다.
+        
+        Returns:
+            List[str]: 모든 댓글.
+        """
+        return self.comments

@@ -62,20 +62,20 @@ class TaskGenerator:
         
     def set_main_prompt(self, prompt: str) -> None:
         """
-        Set the prompt to use for generating tasks.
+        할 일을 생성하기 위한 프롬프트를 설정합니다.
         
         Args:
-            prompt (str): The prompt to use for generating tasks.
+            prompt (str): 할 일을 생성하기 위한 프롬프트트
         """
         self.prompt_main = prompt
         self._prompt_template = self._create_prompt_template()
     
     def set_context_prompt(self, prompt_context: str) -> None:
         """
-        Set the context prompt to use for generating tasks.
+        할 일을 생성하기 위한 컨텍스트 프롬프트를 설정합니다.
         
         Args:
-            prompt_context (str): The context prompt to use for generating tasks.
+            prompt_context (str): 할 일을 생성하기 위한 컨텍스트 프롬프트
         """
         self.prompt_kwargs = prompt_context
         self._prompt_template = self._create_prompt_template()

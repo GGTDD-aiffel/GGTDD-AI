@@ -116,6 +116,11 @@ class Subtask(BaseTask):
         result.append(f"- Other Tags: {self.other_tags}")
         result.append(f"- Estimated Minutes: {self.estimated_minutes}")
         result.append(f"- Supertask: {self.supertask_id} ({self.supertask_type})")
+        
+        if not self.comments == []:
+            for i, comment in enumerate(self.comments):
+                result.append(f"- Comment {i}: {comment}")
+        
         result.append("")
         
         if self.has_subtasks and self.subtasks:

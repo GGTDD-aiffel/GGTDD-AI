@@ -109,6 +109,11 @@ class Task(BaseTask):
         result.append(f"- Time Tags: {self.time_tags}")
         result.append(f"- Other Tags: {self.other_tags}")
         result.append(f"- Estimated Minutes: {self.estimated_minutes}")
+        
+        if not self.comments == []:
+            for i, comment in enumerate(self.comments):
+                result.append(f"- Comment {i}: {comment}")
+        
         result.append("")
         
         if self.subtasks:
