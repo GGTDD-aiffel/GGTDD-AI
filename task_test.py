@@ -1,8 +1,9 @@
 import tasks, userdata
 from langchain_openai import ChatOpenAI
+from LLMs import SceneGenerator, TaskGenerator, TaskCommenter
 
-scene_generator = userdata.SceneGenerator(llm=ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5))
-task_generator = tasks.TaskGenerator(llm=ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5))
+scene_generator = SceneGenerator(llm=ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5))
+task_generator = TaskGenerator(llm=ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5))
 
 user = userdata.User(name="윤형석",
                      residence="서울",
@@ -40,7 +41,7 @@ task_to_break = input("하위 작업을 추가할 상위 작업의 인덱스를 
 task_generator.generate_subtasks(user=user, task_to_breakdown=task.get_subtask(int(task_to_break)-1), subtask_num=3)
 print(task)
 
-task_commenter = tasks.TaskCommenter(llm=ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5))
+task_commenter = TaskCommenter(llm=ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5))
 task_commenter.generate_comment(user=user, task_to_comment=task)
 task_commenter.generate_comment(user=user, task_to_comment=task.get_subtask(4))
 

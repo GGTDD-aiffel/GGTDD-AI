@@ -1,26 +1,26 @@
-from pydantic import BaseModel
+from LLMs.BaseLLMProcessor import BaseLLMProcessor
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import PydanticOutputParser, StrOutputParser
 from typing import Optional, Dict, Any, List
 import json
 
-from .Task import *
-from .Subtask import *
+from tasks.Task import *
+from tasks.Subtask import *
 from userdata import *
 
-class TaskGenerator:
+class TaskGenerator(BaseLLMProcessor):
     def __init__(self, llm: ChatOpenAI):
         """
-        Initialize a new task generator with the given LLM instance.
+        새 작업 생성기를 주어진 LLM 인스턴스로 초기화합니다.
         
         Args:
-            llm (ChatOpenAI): The LLM instance to use for generating tasks.
+            llm (ChatOpenAI): 작업 생성에 사용할 LLM 인스턴스.
         """
-        self.llm = llm
+        super().__init__(llm)
         
         # 프롬프트 기본값 설정
-        self.prompt_main: str = """
+        self.prompt_main = """
         다음은 사용자가 입력한 해야 할 일입니다. 이 할 일에 대한 구체적인 서브태스크를 주어진 숫자에 맞추어 작성하세요.
         단, 생성할 서브태스크의 수가 0으로 주어진다면 서브태스크를 생성하지 않고, 태스크만 생성합니다.
         서브태스크에만 존재하는 필드를 태스크에 생성하지 않도록 주의하세요.
@@ -35,7 +35,7 @@ class TaskGenerator:
         서브태스크를 생성할 때에는, 각 서브태스크를 수행하는 데에 필요한 노력과 시간을 고려하세요.
         """
         
-        self.prompt_kwargs: str = """
+        self.prompt_kwargs = """
         사용자의 인적 정보: {bio}
         사용자의 하루 일과: {prompt}
         사용자가 입력한 할 일: {task}
@@ -123,7 +123,6 @@ class TaskGenerator:
             raise ValueError("세부적으로 나눌 태스크가 주어지지 않았습니다.")
         
         # LLM에서 문자열 응답 직접 가져오기 
-        from langchain_core.output_parsers import StrOutputParser
         str_parser = StrOutputParser()
         chain = self._prompt_template | self.llm | str_parser
         format_instruction = self.subtask_parser.get_format_instructions()

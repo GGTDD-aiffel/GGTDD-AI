@@ -3,7 +3,7 @@ from .BaseTask import BaseTask
 
 if TYPE_CHECKING:
     from .Subtask import Subtask
-    from .TaskGenerator import TaskGenerator
+    from ..LLMs.TaskGenerator import TaskGenerator
 
 class Task(BaseTask):
     """
