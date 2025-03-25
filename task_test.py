@@ -36,13 +36,15 @@ prompt_index = input("프롬프트 중 선택할 인덱스를 입력하세요: "
 user.set_prompt(responses=responses, index=int(prompt_index))
 print(user)
 
-task = tracker.measure(task_generator.process,
-                       timeout=15,
-                       user=user,
-                       task_name="에견카페 방문하기",
-                       subtask_num=5)
+print(task_generator._process_paraphrase(user=user, input_to_paraphrase="자동차 정비소 방문하기"))
 
-print(task)
+# task = tracker.measure(task_generator.process,
+#                        timeout=15,
+#                        user=user,
+#                        task_name="에견카페 방문하기",
+#                        subtask_num=5)
+
+# print(task)
 # subtask_num = input("하위 작업의 개수를 입력하세요: ")
 # task_generator.process(timeout=15,
 #                        processor_func=task_generator._process_subtasks,
@@ -50,20 +52,20 @@ print(task)
 #                        task_to_breakdown=task,
 #                        subtask_num=int(subtask_num))
 # print(task)
-task_to_break = input("하위 작업을 추가할 상위 작업의 인덱스를 입력하세요: ")
-tracker.measure(task_generator.process,
-                timeout=15,
-                processor_func=task_generator._process_subtasks,
-                user=user,
-                task_to_breakdown=task.get_subtask(int(task_to_break)-1),
-                subtask_num=3)
-print(task)
+# task_to_break = input("하위 작업을 추가할 상위 작업의 인덱스를 입력하세요: ")
+# tracker.measure(task_generator.process,
+#                 timeout=15,
+#                 processor_func=task_generator._process_subtasks,
+#                 user=user,
+#                 task_to_breakdown=task.get_subtask(int(task_to_break)-1),
+#                 subtask_num=3)
+# print(task)
 
-tracker.measure(task_commenter.process, 
-                user=user, 
-                task_to_comment=task)
-# task_commenter.process(user=user, task_to_comment=task.get_subtask(4))
+# tracker.measure(task_commenter.process, 
+#                 user=user, 
+#                 task_to_comment=task)
+# # task_commenter.process(user=user, task_to_comment=task.get_subtask(4))
 
-print(task)
+# print(task)
 
-print(tracker.get_summary())
+# print(tracker.get_summary())

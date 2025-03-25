@@ -80,7 +80,7 @@ class TaskGenerator(BaseLLMProcessor):
         self.prompt_kwargs = prompt_context
         self._prompt_template = self._create_prompt_template()
 
-    def _process_default(self, user: User, task_name: str, subtask_num = 5) -> Task:
+    def _process_default(self, user: User, task_input: str, subtask_num = 5) -> Task:
         """
         주어진 사용자 정보와 태스크 이름을 사용하여 태스크를 생성합니다.
         
@@ -92,7 +92,7 @@ class TaskGenerator(BaseLLMProcessor):
         Returns:
             Task: 생성된 태스크 객체
         """
-        if not task_name or not task_name.strip():
+        if not task_input or not task_input.strip():
             raise ValueError("태스크 이름은 비어 있을 수 없습니다.")
             
         chain = self._prompt_template | self.llm | self.task_parser
@@ -101,7 +101,7 @@ class TaskGenerator(BaseLLMProcessor):
         task = chain.invoke({
             "bio": user.bio,
             "prompt": user.prompt,
-            "task": task_name,
+            "task": task_input,
             "subtask_num": subtask_num,
             "format_instruction": format_instruction})
         
@@ -155,6 +155,48 @@ class TaskGenerator(BaseLLMProcessor):
             task_to_breakdown.update_estimated_minutes()
         
         return task_to_breakdown
+    
+    def _process_paraphrase(self, user: User, input_to_paraphrase: str) -> str:
+        """
+        사용자가 입력한 태스크를 다시 작성합니다.
+        
+        Args:
+            user (User): 사용자 정보
+            input_to_paraphrase (str): 다시 작성할 태스크
+        """
+        if not input_to_paraphrase:
+            raise ValueError("다시 작성할 태스크가 주어지지 않았습니다.")
+        
+        paraphrasing_prompt = """
+        다음은 사용자가 입력한 할 일입니다. 당신은 사용자가 의도한 할 일을 최대한 구체적으로 이해해야 합니다.
+        사용자가 하고자 하는 일을 정확히 이해하기 위해 사용자의 입력을 다시 작성하여 3개 내외로 사용자에게 제시하세요.
+        "도서관에 가기"라는 할 일이 주어졌다면, "도서관에서 공부하기", "도서관에서 책 빌리기" 등으로 다시 작성할 수 있습니다.
+        
+        사용자가 입력한 할 일을 이해할 때에는 사용자의 인적 정보와 하루 일과를 함께 고려하세요.
+        각각의 답변은 사용자의 입력을 왜곡하지 않으면서도 다양한 방식으로 다시 작성해야 합니다.
+        각각의 답변은 "---"로 구분하고, 답변 외의 부수적인 내용은 생략하세요.
+        
+        사용자의 인적 정보: {bio}
+        사용자의 하루 일과: {prompt}
+        사용자가 입력한 할 일: {task}
+        지침: {format_instruction}
+        """
+        
+        paraphrasing_prompt = ChatPromptTemplate.from_template(paraphrasing_prompt)
+        
+        # LLM에서 문자열 응답 직접 가져오기 
+        str_parser = ParaphraseOutputParser()
+        chain = paraphrasing_prompt | self.llm | str_parser
+        
+        # LLM 호출 및 응답 가져오기
+        raw_output = chain.invoke({
+            "bio": user.bio,
+            "prompt": user.prompt,
+            "task": str(input_to_paraphrase),
+            "format_instruction": ParaphraseOutputParser.get_format_instructions()
+        })
+                
+        return raw_output
 
 class SubtaskParser:
     """Subtask 객체를 생성하는 커스텀 파서 클래스"""
@@ -238,3 +280,13 @@ class SubtaskParser:
             # 디버깅용 출력
             print(f"LLM 출력: {llm_output}")
             return []
+
+class ParaphraseOutputParser(BaseOutputParser):
+    def parse(self, text: str) -> list[str]:
+        responses = text.split("---")
+        items = [response.strip() for response in responses]
+        return items
+
+    @staticmethod
+    def get_format_instructions() -> str:
+        return '서로 다른 답변은 "---"로 구분하세요.'
