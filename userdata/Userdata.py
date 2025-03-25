@@ -1,9 +1,11 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import BaseOutputParser
 from langchain_openai import ChatOpenAI
+import concurrent.futures
+from concurrent.futures import TimeoutError
 
 if TYPE_CHECKING:
     from .Scene import *
@@ -61,7 +63,19 @@ class User(BaseModel):
     def bio(self):
         return self.model_dump_json()
     
-    def generate_prompt(self):
+    def generate_prompt(self, timeout: Optional[float] = None) -> List[str]:
+        """
+        사용자 정보를 바탕으로 다양한 프롬프트 응답을 생성합니다.
+        
+        Args:
+            timeout (Optional[float]): 처리 작업이 완료되어야 하는 최대 시간(초). None이면 타임아웃 없음.
+            
+        Returns:
+            List[str]: 생성된 프롬프트 응답 목록
+            
+        Raises:
+            TimeoutError: 지정된 타임아웃 시간 내에 처리가 완료되지 않은 경우
+        """
         prompt_template = ChatPromptTemplate.from_template("""
         다음은 사용자 정보입니다. 이 정보를 바탕으로, 사용자의 성격과 하루 일과, 주요 관심사를를 상상해서 1문단으로 작성하세요.
         이를 작성하는 이유는 사용자의 할 일을 사용자의 생활패턴과 맥락에 맞게 구체화하여 추천하기 위해서입니다.
@@ -77,14 +91,25 @@ class User(BaseModel):
         {format_instruction}
 
         사용자 정보: {bio}
-        """).partial(format_instruction=response_parser.get_format_instructions())
+        """)
+        
+        format_instruction=response_parser.get_format_instructions()
 
         llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5)
-
         chain = prompt_template | llm | response_parser
-        responses = chain.invoke({"bio": self.bio})
         
-        return responses
+        # 타임아웃 적용
+        if timeout is None:
+            # 타임아웃 없이 직접 실행
+            return chain.invoke({"bio": self.bio, "format_instruction": format_instruction})
+        
+        # 타임아웃 적용하여 실행
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(chain.invoke, {"bio": self.bio, "format_instruction": format_instruction})
+            try:
+                return future.result(timeout=timeout)
+            except concurrent.futures.TimeoutError:
+                raise TimeoutError(f"프롬프트 생성 작업이 {timeout}초 내에 완료되지 않았습니다.")
     
     def set_prompt(self, responses: list[str], index: int):
         self.prompt = responses[index]
@@ -131,7 +156,8 @@ class CustomListOutputParser(BaseOutputParser):
         items = [response.strip() for response in responses]
         return items
 
-    def get_format_instructions(self) -> str:
+    @staticmethod
+    def get_format_instructions() -> str:
         return '서로 다른 답변은 "---"로 구분하세요.'
 
 # 파서 초기화

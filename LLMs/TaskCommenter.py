@@ -26,7 +26,7 @@ class TaskCommenter(BaseLLMProcessor):
         self.comment_parser = StrOutputParser()
         self._prompt_template = self._create_prompt_template()
     
-    def generate_comment(self, user: User, task_to_comment: Task|Subtask) -> str:
+    def _process_default(self, user: User, task_to_comment: Task|Subtask) -> str:
         """
         주어진 사용자 정보와 할 일 정보를 사용하여 사용자에게 도움이 될 수 있는 코멘트를 생성합니다.
         

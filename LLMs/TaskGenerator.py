@@ -80,7 +80,7 @@ class TaskGenerator(BaseLLMProcessor):
         self.prompt_kwargs = prompt_context
         self._prompt_template = self._create_prompt_template()
 
-    def generate_task(self, user: User, task_name: str, subtask_num = 5) -> Task:
+    def _process_default(self, user: User, task_name: str, subtask_num = 5) -> Task:
         """
         주어진 사용자 정보와 태스크 이름을 사용하여 태스크를 생성합니다.
         
@@ -110,7 +110,7 @@ class TaskGenerator(BaseLLMProcessor):
         task.update_estimated_minutes()
         return task
 
-    def generate_subtasks(self, user: User, task_to_breakdown: Task|Subtask, subtask_num=3) -> Task|Subtask:
+    def _process_subtasks(self, user: User, task_to_breakdown: Task|Subtask, subtask_num=3) -> Task|Subtask:
         """
         주어진 사용자 정보와 태스크를 세부적으로 나눕니다.
         

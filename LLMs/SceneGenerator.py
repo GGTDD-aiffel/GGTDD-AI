@@ -37,7 +37,7 @@ class SceneGenerator(BaseLLMProcessor):
         self.scene_parser = PydanticOutputParser(pydantic_object=Scenes)
         self._prompt_template = self._create_prompt_template()
 
-    def generate_scenes(self, user: User, scenes: list[str]) -> list[Scene]:
+    def _process_default(self, user: User, scenes: list[str]) -> list[Scene]:
         """
         주어진 사용자 정보와 장면 이름을 사용하여 장면을 생성합니다.
         
